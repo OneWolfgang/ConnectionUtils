@@ -23,6 +23,7 @@ import org.qq.common.eventbus.Event;
 import org.qq.common.eventbus.EventBus;
 import org.qq.common.util.CommonUtils;
 import org.qq.common.util.UIUtil;
+import org.qq.common.wifi.WifiConnectionManager;
 
 public class MainActivity extends Activity {
 
@@ -52,13 +53,13 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		EventBus.getInstance().register(this);
-		mConnectManager = BluetoothConnectionManager.getInstance();
+		mConnectManager = WifiConnectionManager.getInstance();
 
 		mConnectManager.init(this);
 
 		findViewById(R.id.build).setOnClickListener(mOnClickListener);
 		findViewById(R.id.connect).setOnClickListener(mOnClickListener);
-		findViewById(R.id.connect).setEnabled(false);
+//		findViewById(R.id.connect).setEnabled(false);
 		findViewById(R.id.senddata).setOnClickListener(mOnClickListener);
 		findViewById(R.id.readdata).setOnClickListener(mOnClickListener);
 		
@@ -87,7 +88,7 @@ public class MainActivity extends Activity {
 				mConnectManager.listen();
 				break;
 			case R.id.connect:
-//				mConnectManager.connect();
+				mConnectManager.connect("");
 				break;
 			case R.id.senddata:
 				List<String> ipList = mConnectManager.getConnectedDevices();

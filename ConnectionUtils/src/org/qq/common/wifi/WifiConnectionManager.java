@@ -77,7 +77,7 @@ public class WifiConnectionManager implements IConnectManager {
 	private HashMap<String, SocketWriteThread> mWriteThreadMap = new HashMap<String, SocketWriteThread>();
 
 	private static final int CONNECT_ACTION_NONE = 0;
-	private static final int CONNECT_ACTION_CREATE_SOCKET = 0;
+	private static final int CONNECT_ACTION_CREATE_SOCKET = 1;
 	private int mNextConnectAction = CONNECT_ACTION_NONE;
 	@Override
 	public boolean init(Context context) {
@@ -199,9 +199,7 @@ public class WifiConnectionManager implements IConnectManager {
 		if (null != wifiInfo
 				&& ("\"" + COMMON_SSID + "\"").equals(wifiInfo.getSSID())) {
 			String ipString = CommonUtils.intToIp(wifiInfo.getIpAddress());
-			if (mReadThreadMap.get(ipString) == null) {
-				createSocketToServer(ipString);
-			}
+			createSocketWhenConnected();
 			return true;
 		}
 
@@ -219,10 +217,10 @@ public class WifiConnectionManager implements IConnectManager {
 		int netID = mWifiManager.addNetwork(config);
 		boolean result = mWifiManager.enableNetwork(netID, true);
 
-		if (result) {
-			Logging.d(TAG, "connect() | connect wifi failed");
-			return false;
-		}
+//		if (!result) {
+//			Logging.d(TAG, "connect() | connect wifi failed");
+//			return false;
+//		}
 
 		// after net change to what we want, go to excute
 		// method createSocketWhenConnected()
@@ -242,8 +240,10 @@ public class WifiConnectionManager implements IConnectManager {
 
 		int ip = info.gateway;
 		final String ipString = CommonUtils.intToIp(ip);
-
-		createSocketToServer(ipString);
+		
+		if(mReadThreadMap.get(ipString) == null) {
+		    createSocketToServer(ipString);
+		}
 	}
 
 	private void createSocketToServer(final String ipString) {
@@ -254,8 +254,7 @@ public class WifiConnectionManager implements IConnectManager {
 					Socket clientSocket = new Socket(ipString, INIT_PORT);
 
 					Logging.d(TAG,
-							"createSocketToServer() | create socket success "
-									+ ipString);
+							"createSocketToServer() | create socket success " + ipString);
 
 					SocketWriteThread writeThread = new SocketWriteThread(
 							new WifiSocket(clientSocket));
