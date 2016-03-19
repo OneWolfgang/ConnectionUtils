@@ -334,6 +334,8 @@ public class BluetoothConnectionManager implements IConnectManager {
 
 	@Override
 	public void destroy() {
+		mInstance = null;
+		
 		if(null != mBluetoothEventReceiver) {
 			mContext.unregisterReceiver(mBluetoothEventReceiver);
 			mBluetoothEventReceiver = null;

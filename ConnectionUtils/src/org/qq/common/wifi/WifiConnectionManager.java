@@ -243,18 +243,26 @@ public class WifiConnectionManager implements IConnectManager {
 		
 		if(mReadThreadMap.get(ipString) == null) {
 		    createSocketToServer(ipString);
+		} else {
+			Logging.d(TAG,
+					"createSocketWhenConnected() | created socket, do nothing");
 		}
 	}
 
 	private void createSocketToServer(final String ipString) {
+		Logging.d(TAG, "createSocketToServer()");
 		Thread clientThread = new Thread() {
 			@Override
 			public void run() {
 				try {
+					// NOTICE: On Android5.1(ZTEB880), after we confirm the wifi is connected,
+					// we also can not create a socket to server,
+					// waiting at least 400ms can solve this problem
+					sleep(400);
+					
 					Socket clientSocket = new Socket(ipString, INIT_PORT);
 
-					Logging.d(TAG,
-							"createSocketToServer() | create socket success " + ipString);
+					Logging.d(TAG, "createSocketToServer() | create socket success " + ipString);
 
 					SocketWriteThread writeThread = new SocketWriteThread(
 							new WifiSocket(clientSocket));
@@ -323,6 +331,8 @@ public class WifiConnectionManager implements IConnectManager {
 	@Override
 	public void destroy() {
 		Logging.d(TAG, "destroy()");
+		mInstance = null;
+		
 		if (null != mWifiEventReceiver) {
 			mContext.unregisterReceiver(mWifiEventReceiver);
 			mWifiEventReceiver = null;
@@ -398,7 +408,9 @@ public class WifiConnectionManager implements IConnectManager {
 				Logging.d(TAG, "onReceive() | NETWORK_STATE_CHANGED_ACTION");
 				
 				NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
-				if(null != networkInfo && networkInfo.isConnected()) {
+				String bssid = intent.getStringExtra(WifiManager.EXTRA_BSSID);
+//				Logging.d(TAG, "onReceive()| networkInfo= " + networkInfo + " bssid= " + bssid);
+				if(null != networkInfo && networkInfo.isConnected() && !CommonUtils.isEmpty(bssid)) {
 					if(mNextConnectAction == CONNECT_ACTION_CREATE_SOCKET) {
 						mNextConnectAction = CONNECT_ACTION_NONE;
 						createSocketWhenConnected();

@@ -51,6 +51,10 @@ public class CommonUtils {
     	return null == collection || collection.isEmpty();
     }
     
+    public static boolean isEmpty(String str) {
+    	return null == str || str.length() <= 0;
+    }
+    
     public static <T> List<T> asList(T t) {
     	if(null == t) {
     		return null;
