@@ -230,9 +230,9 @@ public class BluetoothConnectionManager implements IConnectManager {
 	private void createConnectThread(final BluetoothDevice device) {
 		Thread connectThread = new Thread() {
 			public void run() {
-				BluetoothSocket socket = null;
 				try {
-					socket = device
+					//we CANNOT close the socket in finally{}, otherwise no data can be translated
+					BluetoothSocket socket = device
 							.createRfcommSocketToServiceRecord(UUID_CONNECTION);
 					//block until connect success
 					socket.connect();
@@ -248,15 +248,6 @@ public class BluetoothConnectionManager implements IConnectManager {
 					readThread.start();
 				} catch (Exception ex) {
 					Logging.d(TAG, "connect()| connect to server failed", ex);
-				} finally {
-					if(null != socket) {
-						try {
-							socket.close();
-						} catch (IOException e) {
-							Logging.d(TAG, "connect()| close socket failed", e);
-						}
-						socket = null;
-					}
 				}
 			}
 		};
